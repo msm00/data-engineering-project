@@ -1,0 +1,109 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Pravidla a best practices pro Spark-Airflow-Postgres stack
+globs: 
+alwaysApply: true
+---
+# Spark-Airflow-Postgres Stack - Pravidla a Best Practices
+
+## 1. Správa dat a metadata
+- Každá tabulka musí mít definovaného vlastníka (data ownera)
+- Povinné metadata tagy: owner, creation_date, sensitivity_level, retention_period
+- Dokumentace datových toků a závislostí v Airflow UI
+- Implementovat verzování schématu pomocí migrací
+
+## 2. Vývoj a deployment
+- Veškerý kód musí být verzován v Git
+- Používat Docker kontejnery pro konzistentní prostředí
+- Implementovat CI/CD pipeline pro automatizované testy a deployment
+- Dodržovat principy Infrastructure as Code (IaC)
+
+## 3. Apache Spark
+- Optimalizovat Spark jobs pro výkon:
+  - Používat cache() a persist() s rozmyslem
+  - Implementovat partitioning strategy
+  - Monitorovat a optimalizovat shuffle operace
+- Implementovat error handling a logging
+- Používat Spark UI pro monitoring a optimalizaci
+- Pravidelně čistit temporary data
+- Využívat Spark SQL pro integraci s PostgreSQL
+- Implementovat checkpointing pro dlouhotrvající procesy
+
+## 4. Apache Airflow
+- Každý DAG musí mít dokumentaci
+- Implementovat retry mechanismy (dodržovat idempotenci)
+- Používat Airflow connections pro správu přístupů
+- Implementovat monitoring a alerting
+- Dodržovat konvence pro pojmenování DAGů: {team}_{purpose}_{frequency}
+- Využívat variables, XComs a templating efektivně
+- Implementovat testy pro DAGy
+- Používat sensory pro závislosti na externích systémech
+
+## 5. Data Quality a Testing
+- Implementovat unit testy pro všechny transformace
+- Definovat Data Quality checks:
+  - Null checks
+  - Duplicity
+  - Referenční integrita
+  - Business pravidla
+- Používat Great Expectations pro data testing
+- Implementovat test fixtures pro databázové testování
+
+## 6. Postgres DB a Schema Management
+- Používat migrační skripty pro změny schématu
+- Implementovat indexy pro optimalizaci dotazů
+- Pravidelně analyzovat a optimalizovat výkon (EXPLAIN ANALYZE)
+- Zálohování a disaster recovery plán
+- Používat connection pooling v produkčním prostředí
+- Monitorovat dlouhotrvající transakce a deadlocky
+
+## 7. Bezpečnost
+- Implementovat Role-Based Access Control (RBAC)
+- Šifrovat citlivá data
+- Pravidelný audit přístupů
+- Dodržovat princip nejmenších oprávnění
+- Zabezpečit Airflow webserver pomocí HTTPS a autentizace
+- Nevkládat hesla a tajné klíče přímo do kódu
+
+## 8. Monitoring a Výkon
+- Implementovat monitoring pro:
+  - Využití zdrojů (CPU, paměť, disk)
+  - Doba běhu jobů
+  - Chybovost
+  - Latence
+- Nastavit alerty pro kritické metriky
+- Pravidelně provádět performance tuning
+- Využívat Airflow pro monitoring ETL procesů
+
+## 9. Python Best Practices
+- Používat virtual environments
+- Dodržovat PEP 8
+- Dokumentovat kód pomocí docstringů
+- Používat type hints
+- Implementovat logging
+- Používat pytest pro testování
+- Udržovat požadavky na balíčky aktualizované (requirements.txt)
+
+## 10. Integrace Spark a Airflow
+- Používat SparkSubmitOperator pro spouštění Spark jobů
+- Předávat parametry z Airflow do Spark úloh
+- Monitorovat průběh Spark jobů z Airflow
+- Implementovat senzory pro sledování dokončení Spark úloh
+
+## 11. Verzování a Schema Evolution
+- Dokumentovat všechny změny schématu
+- Implementovat backward compatibility
+- Testovat migrace před nasazením
+- Udržovat historii změn schématu
+- Používat liquibase nebo Alembic pro databázové migrace
+
+## 12. Dokumentace
+- Aktualizovat dokumentaci při každé změně
+- Dokumentovat architekturu řešení
+- Udržovat aktuální datový katalog
+- Dokumentovat závislosti mezi systémy
+- Používat Airflow UI jako součást dokumentace
