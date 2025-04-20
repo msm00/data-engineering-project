@@ -9,10 +9,10 @@ BEGIN
         -- PostgreSQL proměnná prostředí POSTGRES_DB již vytvoří databázi, ale pro jistotu
         CREATE DATABASE ecommerce 
         WITH OWNER = postgres
-        ENCODING = 'UTF8'
-        LC_COLLATE = 'en_US.utf8'
-        LC_CTYPE = 'en_US.utf8'
-        TEMPLATE = template0;
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.utf8'
+    LC_CTYPE = 'en_US.utf8'
+    TEMPLATE = template0;
     END IF;
 END
 $$;
