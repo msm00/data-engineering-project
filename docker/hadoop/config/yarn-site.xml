@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+        <description>Shuffle service pro MapReduce</description>
+    </property>
+    
+    <property>
+        <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
+    
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>resourcemanager</value>
+        <description>Hostname ResourceManageru</description>
+    </property>
+    
+    <property>
+        <name>yarn.nodemanager.resource.memory-mb</name>
+        <value>4096</value>
+        <description>Paměť dostupná pro kontejnery na NodeManager (v MB)</description>
+    </property>
+    
+    <property>
+        <name>yarn.scheduler.minimum-allocation-mb</name>
+        <value>512</value>
+        <description>Minimální alokace paměti pro kontejner (v MB)</description>
+    </property>
+    
+    <property>
+        <name>yarn.scheduler.maximum-allocation-mb</name>
+        <value>4096</value>
+        <description>Maximální alokace paměti pro kontejner (v MB)</description>
+    </property>
+    
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>false</value>
+        <description>Vypnutí kontroly virtuální paměti pro vývojové prostředí</description>
+    </property>
+</configuration> 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+        <description>MapReduce framework používá YARN</description>
+    </property>
+    
+    <property>
+        <name>mapreduce.map.memory.mb</name>
+        <value>1024</value>
+        <description>Paměť pro mapovací úlohy</description>
+    </property>
+    
+    <property>
+        <name>mapreduce.reduce.memory.mb</name>
+        <value>2048</value>
+        <description>Paměť pro reduce úlohy</description>
+    </property>
+    
+    <property>
+        <name>mapreduce.map.java.opts</name>
+        <value>-Xmx819m</value>
+        <description>JVM heapmem pro mapper</description>
+    </property>
+    
+    <property>
+        <name>mapreduce.reduce.java.opts</name>
+        <value>-Xmx1638m</value>
+        <description>JVM heapmem pro reducer</description>
+    </property>
+    
+    <property>
+        <name>mapreduce.application.classpath</name>
+        <value>$HADOOP_HOME/share/hadoop/mapreduce/*,$HADOOP_HOME/share/hadoop/mapreduce/lib/*,$HADOOP_HOME/share/hadoop/common/*,$HADOOP_HOME/share/hadoop/common/lib/*,$HADOOP_HOME/share/hadoop/yarn/*,$HADOOP_HOME/share/hadoop/yarn/lib/*,$HADOOP_HOME/share/hadoop/hdfs/*,$HADOOP_HOME/share/hadoop/hdfs/lib/*</value>
+    </property>
+</configuration> 

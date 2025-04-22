@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Hadoop NameNode
+  namenode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-namenode
+    hostname: namenode
+    ports:
+      - "9870:9870" # NameNode Web UI
+      - "9000:9000" # HDFS RPC
+    volumes:
+      - hadoop-namenode-data:/data/namenode
+      - hadoop-logs:/data/logs
+      - ./hadoop-namenode-entrypoint.sh:/entrypoint.sh
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "namenode", "9870" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Hadoop DataNode
+  datanode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-datanode
+    hostname: datanode
+    ports:
+      - "9864:9864" # DataNode Web UI
+    volumes:
+      - hadoop-datanode-data:/data/datanode
+      - hadoop-logs:/data/logs
+      - ./hadoop-datanode-entrypoint.sh:/entrypoint.sh
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "datanode", "9864" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # YARN ResourceManager
+  resourcemanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-resourcemanager
+    hostname: resourcemanager
+    ports:
+      - "8088:8088" # ResourceManager Web UI
+    volumes:
+      - hadoop-logs:/data/logs
+      - ./hadoop-resourcemanager-entrypoint.sh:/entrypoint.sh
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "resourcemanager", "8088" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # YARN NodeManager
+  nodemanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-nodemanager
+    hostname: nodemanager
+    ports:
+      - "8042:8042" # NodeManager Web UI
+    volumes:
+      - hadoop-logs:/data/logs
+      - ./hadoop-nodemanager-entrypoint.sh:/entrypoint.sh
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+    networks:
+      - hadoop-network
+
+networks:
+  hadoop-network:
+    driver: bridge
+
+volumes:
+  hadoop-namenode-data:
+  hadoop-datanode-data:
+  hadoop-logs:

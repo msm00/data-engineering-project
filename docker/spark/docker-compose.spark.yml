@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Spark Master
+  spark-master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "4040:4040" # Spark UI
+      - "8080:8080" # Spark Master WebUI
+      - "7077:7077" # Spark Master port
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+    volumes:
+      - ./app:/app
+      - spark-master-logs:/opt/spark/logs
+    command: >
+      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master >> /opt/spark/logs/spark-master.out"
+    networks:
+      - spark-network
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "spark-master", "8080" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Spark Worker
+  spark-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spark-worker
+    hostname: spark-worker
+    ports:
+      - "8081:8081" # Spark Worker WebUI
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
+    volumes:
+      - ./app:/app
+      - spark-worker-logs:/opt/spark/logs
+    command: >
+      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 >> /opt/spark/logs/spark-worker.out"
+    networks:
+      - spark-network
+      - hadoop-network
+
+networks:
+  spark-network:
+    driver: bridge
+  hadoop-network:
+    external: true
+
+volumes:
+  spark-master-logs:
+  spark-worker-logs:

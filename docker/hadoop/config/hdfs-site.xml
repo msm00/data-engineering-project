@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+        <description>Počet replikací bloků (pro vývojové prostředí stačí 1)</description>
+    </property>
+    
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/data/namenode</value>
+        <description>Adresář pro data NameNode</description>
+    </property>
+    
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/data/datanode</value>
+        <description>Adresář pro data DataNode</description>
+    </property>
+    
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>namenode:9870</value>
+        <description>NameNode web UI</description>
+    </property>
+    
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+        <description>Vypnutí kontrol oprávnění pro vývojové prostředí</description>
+    </property>
+</configuration> 

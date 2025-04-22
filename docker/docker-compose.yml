@@ -28,3 +28,6 @@ networks:
 
 volumes:
   postgres-data:
+
+    # Zde můžete přidat další služby nebo použít kompozici s další konfigurací:
+    # docker-compose -f docker-compose.yml -f docker/hadoop/docker-compose.hadoop.yml up -d

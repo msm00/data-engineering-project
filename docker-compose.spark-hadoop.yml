@@ -1,0 +1,195 @@
+version: '3.8'
+
+services:
+  # Hadoop NameNode
+  namenode:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+    container_name: hadoop-namenode
+    hostname: namenode
+    ports:
+      - "9870:9870" # NameNode Web UI
+      - "9000:9000" # HDFS RPC
+    volumes:
+      - hadoop-namenode-data:/data/namenode
+      - hadoop-logs:/data/logs
+      - ./docker/hadoop/hadoop-namenode-entrypoint.sh:/entrypoint.sh
+      - ./project/data:/project/data # Připojení adresáře s daty
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "namenode", "9870" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Hadoop DataNode
+  datanode:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+    container_name: hadoop-datanode
+    hostname: datanode
+    ports:
+      - "9864:9864" # DataNode Web UI
+    volumes:
+      - hadoop-datanode-data:/data/datanode
+      - hadoop-logs:/data/logs
+      - ./docker/hadoop/hadoop-datanode-entrypoint.sh:/entrypoint.sh
+      - ./project/data:/project/data # Připojení adresáře s daty
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "datanode", "9864" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # YARN ResourceManager
+  resourcemanager:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+    container_name: hadoop-resourcemanager
+    hostname: resourcemanager
+    ports:
+      - "8088:8088" # ResourceManager Web UI
+    volumes:
+      - hadoop-logs:/data/logs
+      - ./docker/hadoop/hadoop-resourcemanager-entrypoint.sh:/entrypoint.sh
+      - ./project/data:/project/data # Připojení adresáře s daty
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "resourcemanager", "8088" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # YARN NodeManager
+  nodemanager:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+    container_name: hadoop-nodemanager
+    hostname: nodemanager
+    ports:
+      - "8042:8042" # NodeManager Web UI
+    volumes:
+      - hadoop-logs:/data/logs
+      - ./docker/hadoop/hadoop-nodemanager-entrypoint.sh:/entrypoint.sh
+      - ./project/data:/project/data # Připojení adresáře s daty
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+    entrypoint: [ "/bin/bash", "/entrypoint.sh" ]
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+    networks:
+      - hadoop-network
+
+  # PostgreSQL
+  postgres:
+    image: postgres:14
+    container_name: postgres-spark-hadoop
+    hostname: postgres
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=dataengineering
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - hadoop-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spark Master
+  spark-master:
+    build:
+      context: ./docker/spark
+      dockerfile: Dockerfile
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "4040:4040" # Spark UI
+      - "9090:8080" # Spark Master WebUI
+      - "7077:7077" # Spark Master port
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+    volumes:
+      - ./docker/spark/app:/app
+      - ./project/data:/project/data
+      - spark-master-logs:/opt/spark/logs
+    command: >
+      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master >> /opt/spark/logs/spark-master.out"
+    networks:
+      - hadoop-network
+    depends_on:
+      - namenode
+      - postgres
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "spark-master", "8080" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Spark Worker
+  spark-worker:
+    build:
+      context: ./docker/spark
+      dockerfile: Dockerfile
+    container_name: spark-worker
+    hostname: spark-worker
+    ports:
+      - "8081:8081" # Spark Worker WebUI
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
+    volumes:
+      - ./docker/spark/app:/app
+      - ./project/data:/project/data
+      - spark-worker-logs:/opt/spark/logs
+    command: >
+      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 >> /opt/spark/logs/spark-worker.out"
+    networks:
+      - hadoop-network
+
+networks:
+  hadoop-network:
+    driver: bridge
+
+volumes:
+  hadoop-namenode-data:
+  hadoop-datanode-data:
+  hadoop-logs:
+  postgres-data:
+  spark-master-logs:
+  spark-worker-logs:
