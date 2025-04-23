@@ -1,5 +1,20 @@
 # 14denní intenzivní kurz datového inženýrství
 
+# Technologický stack
+•	Hadoop
+	•	Spark
+	•	AirFlow
+	•	Apache Iceberg
+	•	Atlas Metadata
+	•	Cloudera
+	•	Docker
+	•	Python (s využitím pyenv a poetry)
+	•	Postgres DB
+	•	Schema Evolution
+	•	Time Travel
+  •	Hadoop
+	•	+ další z big data oblasti
+
 ## Den 1-2: Základy a vývojové prostředí
 
 ### Den 1: Příprava prostředí
