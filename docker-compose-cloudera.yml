@@ -1,0 +1,84 @@
+services:
+  namenode:
+    image: apache/hadoop:3
+    platform: linux/amd64
+    container_name: hadoop-namenode
+    hostname: namenode
+    ports:
+      - "9870:9870" # NameNode WebUI
+      - "8020:8020" # HDFS
+    environment:
+      - ENSURE_NAMENODE_DIR=/tmp/hadoop-root/dfs/name
+      - HDFS_CONF_dfs_namenode_name_dir=/hadoop/dfs/name
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+    command: [ "hdfs", "namenode" ]
+    volumes:
+      - ./data:/data
+      - ./examples:/examples
+      - hadoop_namenode:/hadoop/dfs/name
+
+  datanode:
+    image: apache/hadoop:3
+    platform: linux/amd64
+    container_name: hadoop-datanode
+    hostname: datanode
+    depends_on:
+      - namenode
+    ports:
+      - "9864:9864" # DataNode WebUI
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - HDFS_CONF_dfs_datanode_data_dir=/hadoop/dfs/data
+    command: [ "hdfs", "datanode" ]
+    volumes:
+      - ./data:/data
+      - hadoop_datanode:/hadoop/dfs/data
+
+  resourcemanager:
+    image: apache/hadoop:3
+    platform: linux/amd64
+    container_name: hadoop-resourcemanager
+    hostname: resourcemanager
+    depends_on:
+      - namenode
+    ports:
+      - "8088:8088" # ResourceManager WebUI
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+    command: [ "yarn", "resourcemanager" ]
+
+  nodemanager:
+    image: apache/hadoop:3
+    platform: linux/amd64
+    container_name: hadoop-nodemanager
+    hostname: nodemanager
+    depends_on:
+      - resourcemanager
+    ports:
+      - "8042:8042" # NodeManager WebUI
+    environment:
+      - SERVICE_PRECONDITION=resourcemanager:8088
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+    command: [ "yarn", "nodemanager" ]
+
+  jupyterlab:
+    image: jupyter/pyspark-notebook:latest
+    platform: linux/amd64
+    container_name: jupyterlab
+    hostname: jupyterlab
+    ports:
+      - "8888:8888" # JupyterLab WebUI
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_EXECUTOR_MEMORY=1G
+      - SPARK_DRIVER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    volumes:
+      - ./data:/home/jovyan/data
+      - ./examples:/home/jovyan/examples
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:

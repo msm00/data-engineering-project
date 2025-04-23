@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Vytvořit nový konfigurační soubor
+cat > /opt/hive/conf/hive-site.xml << 'EOL'
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://namenode:8020</value>
+  </property>
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://hive-metastore:9083</value>
+  </property>
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>/user/hive/warehouse</value>
+  </property>
+</configuration>
+EOL
+
+echo "Hive konfigurace aktualizována" 
